@@ -5,6 +5,7 @@
 #include <tvision/tv.h>
 
 #include <internal/termdisp.h>
+#include <internal/endian.h>
 
 namespace tvision
 {
@@ -30,14 +31,20 @@ struct TermColor
 
     TermColor& operator=(uint32_t val) noexcept
     {
-        tvintmemcpy(this, &val, sizeof(*this));
+#ifdef TV_BIG_ENDIAN
+        reverseBytes(val);
+#endif
+        memcpy(this, &val, sizeof(*this));
         return *this;
         static_assert(sizeof(*this) == 4, "");
     }
     operator uint32_t() const noexcept
     {
         uint32_t val;
-        tvintmemcpy(&val, this, sizeof(*this));
+        memcpy(&val, this, sizeof(*this));
+#ifdef TV_BIG_ENDIAN
+        reverseBytes(val);
+#endif
         return val;
     }
     TermColor(uint8_t aIdx, TermColorTypes aType) noexcept
